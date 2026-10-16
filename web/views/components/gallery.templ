@@ -14,7 +14,9 @@ templ Gallery(items []sighting.Media) {
 				<!-- Items -->
 				<li class="gallery__item">
 					if m.Type == "StillImage" {
-						<img src={ m.URL } alt={ altText(m) } loading="lazy"/>
+						<a href={ templ.URL(m.URL) } data-lightbox data-caption={ m.Creator }>
+							<img src={ m.URL } alt={ altText(m) } loading="lazy"/>
+						</a>
 					} else {
 						<a href={ templ.URL(m.URL) } rel="noopener">{ altText(m) }</a>
 					}

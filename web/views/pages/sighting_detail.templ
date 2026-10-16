@@ -1,0 +1,278 @@
+package pages
+
+import (
+	"fmt"
+	"strings"
+	"workshop/internal/domain/sighting"
+	"workshop/internal/domain/species"
+	"workshop/internal/domain/weather"
+	"workshop/web/views/components"
+	"workshop/web/views/layout"
+)
+
+func formatCoords(lat, lon float64) string {
+	return fmt.Sprintf("%.4f, %.4f", lat, lon)
+}
+
+func formatOSMMapLink(lat, lon float64) string {
+	return fmt.Sprintf("https://www.openstreetmap.org/?mlat=%f&mlon=%f#map=10/%f/%f", lat, lon, lat, lon)
+}
+
+func formatGBIFLink(key int64) string {
+	return fmt.Sprintf("https://www.gbif.org/occurrence/%d", key)
+}
+
+func formatTemp1(temp float64) string {
+	return fmt.Sprintf("%.1f°C", temp)
+}
+
+func formatWindSpeed(speed float64) string {
+	return fmt.Sprintf("%.1f km/h", speed)
+}
+
+func formatPrecip(precip float64) string {
+	return fmt.Sprintf("%.1f mm", precip)
+}
+
+func formatSnowfall(snowfall float64) string {
+	return fmt.Sprintf("%.1f cm snow", snowfall)
+}
+
+func formatPercent(n int) string {
+	return fmt.Sprintf("%d%%", n)
+}
+
+func formatWidthPercent(n int) string {
+	return fmt.Sprintf("width: %d%%", n)
+}
+
+templ SightingDetail(s sighting.Sighting) {
+	@layout.Base(layout.BaseProps{
+		Title: displayName(s.Species) + " sighting",
+	}) {
+		<h1><i class="ph ph-binoculars"></i> { displayName(s.Species) }</h1>
+		if s.Species.ScientificName != "" {
+			<p class="scientific-name"><i class="ph ph-dna"></i> { s.Species.ScientificName }</p>
+		}
+
+		<article class="detail">
+			<!-- Gallery -->
+			<aside class="detail__gallery">
+				@components.Gallery(s.Media)
+			</aside>
+
+			<!-- Details -->
+			<div class="detail__info">
+				<dl class="detail__meta">
+					<dt><i class="ph ph-calendar"></i> Date</dt>
+					<dd>{ s.HappenedAt.Format("2 January 2006 15:04 MST") }</dd>
+
+					<dt><i class="ph ph-map-pin"></i> Location</dt>
+					<dd>{ place(s.Location) }</dd>
+
+					if s.Location.Latitude != 0 || s.Location.Longitude != 0 {
+						<dt><i class="ph ph-compass"></i> Coordinates</dt>
+						<dd>
+							<a href={ formatOSMMapLink(s.Location.Latitude, s.Location.Longitude) } rel="noopener">
+								{ formatCoords(s.Location.Latitude, s.Location.Longitude) }
+							</a>
+						</dd>
+					}
+
+					if s.IndividualCount != nil {
+						<dt><i class="ph ph-paw-print"></i> Count</dt>
+						<dd>{ individuals(*s.IndividualCount) }</dd>
+					}
+
+					if s.RecordedBy != "" {
+						<dt><i class="ph ph-user"></i> Recorded by</dt>
+						<dd>{ s.RecordedBy }</dd>
+					}
+
+					if s.BasisOfRecord != "" {
+						<dt><i class="ph ph-file-text"></i> Basis of record</dt>
+						<dd>{ s.BasisOfRecord }</dd>
+					}
+
+					if s.Remarks != "" {
+						<dt><i class="ph ph-chat-circle"></i> Remarks</dt>
+						<dd>{ s.Remarks }</dd>
+					}
+
+					if s.ReferenceURL != "" {
+						<dt><i class="ph ph-link"></i> Reference</dt>
+						<dd>
+							<a href={ templ.URL(s.ReferenceURL) } rel="noopener">{ truncateURL(s.ReferenceURL) }</a>
+						</dd>
+					}
+
+					if s.GBIFKey != 0 {
+						<dt><i class="ph ph-globe"></i> GBIF Key</dt>
+						<dd>
+							<a href={ formatGBIFLink(s.GBIFKey) } rel="noopener">{ s.GBIFKey }</a>
+						</dd>
+					}
+				</dl>
+
+				<!-- Weather -->
+				if !s.Weather.ObservedAt.IsZero() {
+					<section class="detail__weather">
+						<h2><i class="ph ph-cloud-sun"></i> Weather Conditions</h2>
+						@WeatherCard(s.Weather)
+					</section>
+				}
+
+				<!-- Species taxonomy -->
+				<section class="detail__taxonomy">
+					<h2><i class="ph ph-dna"></i> Taxonomy</h2>
+					<ul class="taxonomy">
+						if s.Species.Kingdom != "" {
+							<li>
+								<span class="taxonomy__rank">Kingdom</span>
+								<span class="taxonomy__name">{ s.Species.Kingdom }</span>
+							</li>
+						}
+						if s.Species.Phylum != "" {
+							<li>
+								<span class="taxonomy__rank">Phylum</span>
+								<span class="taxonomy__name">{ s.Species.Phylum }</span>
+							</li>
+						}
+						if s.Species.Class != "" {
+							<li>
+								<span class="taxonomy__rank">Class</span>
+								<span class="taxonomy__name">{ s.Species.Class }</span>
+							</li>
+						}
+						if s.Species.Order != "" {
+							<li>
+								<span class="taxonomy__rank">Order</span>
+								<span class="taxonomy__name">{ s.Species.Order }</span>
+							</li>
+						}
+						if s.Species.Family != "" {
+							<li>
+								<span class="taxonomy__rank">Family</span>
+								<span class="taxonomy__name">{ s.Species.Family }</span>
+							</li>
+						}
+						if s.Species.Genus != "" {
+							<li>
+								<span class="taxonomy__rank">Genus</span>
+								<span class="taxonomy__name">{ s.Species.Genus }</span>
+							</li>
+						}
+						if s.Species.Species != "" {
+							<li>
+								<span class="taxonomy__rank">Species</span>
+								<span class="taxonomy__name">{ s.Species.Species }</span>
+							</li>
+						}
+					</ul>
+				</section>
+			</div>
+		</article>
+
+		<a href="/" class="back-link"><i class="ph ph-arrow-left"></i> Back to sightings</a>
+	}
+}
+
+templ WeatherCard(w weather.Weather) {
+	<div class="weather-card">
+		<dl class="weather-card__meta">
+			<dt><i class="ph ph-calendar"></i> Observed</dt>
+			<dd>{ w.ObservedAt.Format("2 January 2006 15:04 MST") }</dd>
+
+			<dt><i class="ph ph-thermometer"></i> Temperature</dt>
+			<dd>
+				{ formatTemp1(w.Temperature.Actual) }
+				if w.Temperature.Apparent != w.Temperature.Actual {
+					<span class="weather-card__apparent"> (feels like { formatTemp1(w.Temperature.Apparent) })</span>
+				}
+			</dd>
+
+			<dt><i class="ph ph-drop"></i> Humidity</dt>
+			<dd>{ formatPercent(w.Humidity) }</dd>
+
+			<dt><i class="ph ph-cloud"></i> Cloud Cover</dt>
+			<dd>{ formatPercent(w.CloudCover) }</dd>
+
+			<dt><i class="ph ph-wind"></i> Wind</dt>
+			<dd>
+				{ formatWindSpeed(w.Wind.Speed) }
+				if w.Wind.Gusts > w.Wind.Speed {
+					<span class="weather-card__gusts"> (gusts { formatWindSpeed(w.Wind.Gusts) })</span>
+				}
+				if w.Wind.Direction != 0 {
+					<span class="weather-card__direction"> { windDirection(w.Wind.Direction) }</span>
+				}
+			</dd>
+
+			<dt><i class="ph ph-cloud-rain"></i> Precipitation</dt>
+			<dd>
+				{ formatPrecip(w.Precipitation.Total) }
+				if w.Precipitation.Snowfall > 0 {
+					<span class="weather-card__snow"> ({ formatSnowfall(w.Precipitation.Snowfall) })</span>
+				}
+			</dd>
+
+			if w.Condition.Description != "" {
+				<dt><i class="ph ph-sun"></i> Condition</dt>
+				<dd>{ w.Condition.Description }</dd>
+			}
+		</dl>
+	</div>
+}
+
+func windDirection(degrees int) string {
+	if degrees < 0 || degrees > 360 {
+		return ""
+	}
+	directions := []string{"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"}
+	idx := int(float64(degrees)/22.5 + 0.5) % 16
+	return directions[idx]
+}
+
+func displayName(sp species.Species) string {
+	if sp.VernacularName != "" {
+		return sp.VernacularName
+	}
+	if sp.CanonicalName != "" {
+		return sp.CanonicalName
+	}
+	if sp.ScientificName != "" {
+		return sp.ScientificName
+	}
+	return "Unknown species"
+}
+
+func place(l sighting.Location) string {
+	var parts []string
+	if l.Locality != "" {
+		parts = append(parts, l.Locality)
+	}
+	if l.StateProvince != "" {
+		parts = append(parts, l.StateProvince)
+	}
+	if l.Country != "" {
+		parts = append(parts, l.Country)
+	}
+	if len(parts) == 0 {
+		return "Location unknown"
+	}
+	return strings.Join(parts, ", ")
+}
+
+func individuals(n int) string {
+	if n == 1 {
+		return "1 individual"
+	}
+	return fmt.Sprintf("%d individuals", n)
+}
+
+func truncateURL(url string) string {
+	if len(url) > 60 {
+		return url[:57] + "..."
+	}
+	return url
+}

@@ -1,0 +1,575 @@
+/*
+ * Uganda — Pearl of Africa Wildlife.
+ *
+ * A savanna-inspired theme: warm golden ground, rich earth tones, and
+ * accents drawn from the Uganda flag (black, yellow, red). The layout
+ * uses wide margins and generous whitespace to let photographs breathe.
+ * A subtle pattern of wildlife silhouettes decorates the header.
+ * Commits to a light palette with warm undertones.
+ */
+
+:root {
+	color-scheme: light;
+
+	/* Savanna palette — warm golden earth */
+	--savanna: #fef3e2;
+	--savanna-deep: #f5e6cc;
+	--savanna-dark: #e8d5b0;
+
+	/* Ink tones */
+	--ink: #1a1208;
+	--ink-soft: #4a3f2f;
+	--ink-faint: #7a6b55;
+
+	/* Uganda flag accents */
+	--gold: #c55a11;
+	--gold-light: #e8832a;
+	--gold-faint: #f5c48a;
+	--red: #c41e3a;
+	--red-soft: #a01830;
+	--black-flag: #1a1208;
+
+	/* Nature accents */
+	--leaf: #2d5a27;
+	--leaf-light: #3d7a34;
+	--water: #1a5c6b;
+
+	/* Rules and borders */
+	--rule: #e0cfa8;
+	--rule-soft: #ecdcc0;
+
+	/* Spacing scale */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 20px;
+	--space-5: 32px;
+	--space-6: 48px;
+	--space-7: 72px;
+
+	/* Typography */
+	--display: "Playfair Display", Georgia, "Times New Roman", serif;
+	--body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body.savanna {
+	margin: 0;
+	background: var(--savanna);
+	color: var(--ink);
+	font: 16px/1.65 var(--body);
+	-webkit-font-smoothing: antialiased;
+	background-image:
+		linear-gradient(135deg, var(--savanna) 0%, var(--savanna-deep) 100%);
+}
+
+h1, h2, h3 {
+	margin: 0;
+	font-family: var(--display);
+	font-weight: 700;
+	letter-spacing: -0.01em;
+}
+
+a {
+	color: var(--gold);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 2px;
+}
+
+a:hover {
+	color: var(--gold-light);
+}
+
+:focus-visible {
+	outline: 2px solid var(--gold);
+	outline-offset: 3px;
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.skip {
+	position: absolute;
+	left: var(--space-4);
+	top: -4rem;
+	z-index: 1000;
+	padding: var(--space-3) var(--space-4);
+	background: var(--gold);
+	color: var(--savanna);
+	font-weight: 600;
+	text-decoration: none;
+	transition: top 160ms ease;
+	border-radius: 0 0 4px 4px;
+}
+
+.skip:focus {
+	top: var(--space-4);
+}
+
+.tnum {
+	font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Audio Toggle ---------- */
+
+.audio-toggle {
+	position: fixed;
+	bottom: var(--space-4);
+	right: var(--space-4);
+	z-index: 900;
+	width: 48px;
+	height: 48px;
+	border: 2px solid var(--gold);
+	border-radius: 50%;
+	background: var(--savanna);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 200ms ease;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.audio-toggle:hover {
+	background: var(--gold);
+	transform: scale(1.05);
+}
+
+.audio-toggle:hover .audio-toggle__icon {
+	filter: brightness(10);
+}
+
+.audio-toggle__icon {
+	font-size: 20px;
+	line-height: 1;
+}
+
+/* ---------- Nameplate ---------- */
+
+.nameplate {
+	padding: var(--space-5) var(--space-4) 0;
+	max-width: 76rem;
+	margin: 0 auto;
+}
+
+.nameplate__bar {
+	height: 3px;
+	background: linear-gradient(90deg, var(--black-flag) 0%, var(--gold) 50%, var(--red) 100%);
+	border-radius: 2px;
+}
+
+.nameplate__row {
+	display: flex;
+	align-items: baseline;
+	gap: var(--space-4);
+	padding: var(--space-3) 0;
+	flex-wrap: wrap;
+}
+
+.nameplate__tag {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--ink-faint);
+	font-weight: 500;
+	letter-spacing: 0.02em;
+}
+
+.nameplate__title {
+	font-size: 1.75rem;
+	color: var(--ink);
+	flex: 1;
+	min-width: 0;
+}
+
+.nameplate__nav {
+	display: flex;
+	gap: var(--space-3);
+	margin-left: auto;
+}
+
+.nameplate__nav a {
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--ink-soft);
+	text-decoration: none;
+	padding: var(--space-1) var(--space-2);
+	border-radius: 4px;
+	transition: background 150ms ease, color 150ms ease;
+}
+
+.nameplate__nav a:hover,
+.nameplate__nav a[aria-current="page"] {
+	color: var(--gold);
+	background: var(--gold-faint);
+}
+
+/* ---------- Lede ---------- */
+
+.lede {
+	max-width: 76rem;
+	margin: var(--space-6) auto;
+	padding: 0 var(--space-4);
+	display: grid;
+	grid-template-columns: 1fr 16rem;
+	gap: var(--space-6);
+	align-items: start;
+}
+
+.lede__head {
+	font-size: 2rem;
+	line-height: 1.2;
+	color: var(--ink);
+	margin-bottom: var(--space-3);
+}
+
+.lede__stand {
+	font-size: 1.125rem;
+	color: var(--ink-soft);
+	font-weight: 500;
+	margin: 0 0 var(--space-3);
+	font-style: italic;
+	font-family: var(--display);
+}
+
+.lede__intro {
+	margin: 0;
+	color: var(--ink-soft);
+}
+
+/* ---------- Margin Notes ---------- */
+
+.margin__figure {
+	padding: var(--space-3) 0;
+	border-bottom: 1px solid var(--rule-soft);
+}
+
+.margin__figure strong {
+	display: block;
+	font-size: 1.5rem;
+	font-family: var(--display);
+	color: var(--gold);
+	line-height: 1.2;
+}
+
+.margin__figure span {
+	font-size: 0.8125rem;
+	color: var(--ink-faint);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.margin__list {
+	margin-top: var(--space-4);
+	padding-top: var(--space-3);
+	border-top: 1px solid var(--rule);
+}
+
+.margin__list h3 {
+	font-size: 0.8125rem;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--ink-faint);
+	margin: 0 0 var(--space-2);
+	font-family: var(--body);
+	font-weight: 600;
+}
+
+.margin__list ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.margin__list li {
+	display: flex;
+	justify-content: space-between;
+	padding: var(--space-2) 0;
+	border-bottom: 1px solid var(--rule-soft);
+	font-size: 0.9375rem;
+}
+
+.margin__list li span {
+	color: var(--ink-soft);
+}
+
+.margin__list li em {
+	color: var(--gold);
+	font-style: normal;
+	font-weight: 600;
+}
+
+/* ---------- Inset Map ---------- */
+
+.inset {
+	max-width: 76rem;
+	margin: var(--space-6) auto var(--space-5);
+	padding: 0 var(--space-4);
+}
+
+.inset__map {
+	height: 24rem;
+	border-radius: 8px;
+	overflow: hidden;
+	border: 1px solid var(--rule);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.inset figcaption {
+	margin-top: var(--space-2);
+	font-size: 0.875rem;
+	color: var(--ink-faint);
+	font-style: italic;
+}
+
+/* ---------- Entries ---------- */
+
+.entries {
+	max-width: 76rem;
+	margin: 0 auto;
+	padding: 0 var(--space-4) var(--space-7);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-5);
+}
+
+.entry {
+	display: grid;
+	grid-template-columns: 1fr 20rem;
+	gap: var(--space-5);
+	padding: var(--space-5);
+	background: white;
+	border-radius: 8px;
+	border: 1px solid var(--rule-soft);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+	transition: box-shadow 200ms ease, transform 200ms ease;
+}
+
+.entry:hover {
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+	transform: translateY(-1px);
+}
+
+.entry__folio {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--gold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	margin: 0 0 var(--space-2);
+}
+
+.entry__title {
+	font-size: 1.375rem;
+	color: var(--ink);
+	margin-bottom: var(--space-1);
+	line-height: 1.3;
+}
+
+.entry__latin {
+	font-size: 0.9375rem;
+	color: var(--ink-faint);
+	font-style: italic;
+	margin: 0 0 var(--space-3);
+}
+
+.entry__byline {
+	font-size: 0.875rem;
+	color: var(--ink-faint);
+	margin: 0 0 var(--space-3);
+}
+
+.entry__remarks {
+	font-size: 0.9375rem;
+	color: var(--ink-soft);
+	margin: 0 0 var(--space-3);
+	padding: var(--space-3);
+	background: var(--savanna);
+	border-left: 3px solid var(--gold);
+	border-radius: 0 4px 4px 0;
+}
+
+.entry__meta {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: var(--space-2) var(--space-3);
+	margin: 0;
+	padding: 0;
+	font-size: 0.875rem;
+}
+
+.entry__meta dt {
+	color: var(--ink-faint);
+	font-weight: 500;
+}
+
+.entry__meta dd {
+	margin: 0;
+	color: var(--ink-soft);
+}
+
+.entry__source {
+	margin: var(--space-3) 0 0;
+	font-size: 0.8125rem;
+}
+
+.entry__source a {
+	color: var(--leaf);
+}
+
+/* ---------- Plate (Photograph) ---------- */
+
+.entry__plate {
+	margin: 0;
+	align-self: start;
+}
+
+.entry__plate img {
+	width: 20rem;
+	height: 14rem;
+	object-fit: cover;
+	border-radius: 6px;
+	display: block;
+}
+
+.entry__plate figcaption {
+	margin-top: var(--space-2);
+	font-size: 0.75rem;
+	color: var(--ink-faint);
+}
+
+.entry__noplate {
+	width: 20rem;
+	height: 14rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--savanna-deep);
+	border-radius: 6px;
+	color: var(--ink-faint);
+	font-size: 0.875rem;
+	font-style: italic;
+}
+
+/* ---------- Empty State ---------- */
+
+.empty {
+	max-width: 76rem;
+	margin: var(--space-7) auto;
+	padding: var(--space-6) var(--space-4);
+	text-align: center;
+	color: var(--ink-faint);
+	font-size: 1.125rem;
+}
+
+.empty code {
+	background: var(--savanna-deep);
+	padding: var(--space-1) var(--space-2);
+	border-radius: 4px;
+	font-size: 0.9375rem;
+}
+
+/* ---------- Colophon ---------- */
+
+.colophon {
+	max-width: 76rem;
+	margin: 0 auto;
+	padding: var(--space-5) var(--space-4);
+	color: var(--ink-faint);
+	font-size: 0.8125rem;
+}
+
+.colophon .nameplate__bar {
+	margin-bottom: var(--space-3);
+}
+
+.colophon p {
+	margin: 0 0 var(--space-2);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 64rem) {
+	.lede {
+		grid-template-columns: 1fr;
+		gap: var(--space-5);
+	}
+
+	.margin {
+		order: -1;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+		gap: var(--space-3);
+		padding: var(--space-4);
+		background: var(--savanna-deep);
+		border-radius: 8px;
+	}
+
+	.margin__list {
+		grid-column: 1 / -1;
+	}
+
+	.entry {
+		grid-template-columns: 1fr;
+	}
+
+	.entry__plate img,
+	.entry__noplate {
+		width: 100%;
+		height: 16rem;
+	}
+}
+
+@media (max-width: 48rem) {
+	.nameplate__row {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-2);
+	}
+
+	.nameplate__nav {
+		margin-left: 0;
+	}
+
+	.lede__head {
+		font-size: 1.5rem;
+	}
+
+	.entry {
+		padding: var(--space-4);
+	}
+
+	.inset__map {
+		height: 18rem;
+	}
+}
+
+/* ---------- Reduced Motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+	.entry {
+		transition: none;
+	}
+
+	.entry:hover {
+		transform: none;
+	}
+
+	.audio-toggle {
+		transition: none;
+	}
+
+	.audio-toggle:hover {
+		transform: none;
+	}
+}

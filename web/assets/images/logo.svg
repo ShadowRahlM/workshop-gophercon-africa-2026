@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    .bg { fill: #0A1F0A; }
+    .green { fill: #006B3F; }
+    .gold { fill: #FCDC04; }
+    .dark { fill: #142E14; }
+    @media (prefers-color-scheme: light) {
+      .bg { fill: #F0F7F0; }
+      .green { fill: #004D2E; }
+      .gold { fill: #C4A800; }
+      .dark { fill: #6B8E6B; }
+    }
+  </style>
+  <rect class="bg" width="64" height="64" rx="12"/>
+  <!-- Left lens -->
+  <circle class="green" cx="22" cy="32" r="12"/>
+  <circle class="dark" cx="22" cy="32" r="8"/>
+  <circle class="gold" cx="22" cy="32" r="4"/>
+  <!-- Right lens -->
+  <circle class="green" cx="42" cy="32" r="12"/>
+  <circle class="dark" cx="42" cy="32" r="8"/>
+  <circle class="gold" cx="42" cy="32" r="4"/>
+  <!-- Bridge -->
+  <rect class="gold" x="28" y="28" width="8" height="8" rx="2"/>
+  <!-- Eyepieces -->
+  <rect class="dark" x="10" y="26" width="6" height="12" rx="2"/>
+  <rect class="dark" x="48" y="26" width="6" height="12" rx="2"/>
+  <!-- Uganda flag stripe accent -->
+  <rect class="gold" x="0" y="52" width="64" height="4"/>
+  <rect class="green" x="0" y="56" width="64" height="4"/>
+</svg>

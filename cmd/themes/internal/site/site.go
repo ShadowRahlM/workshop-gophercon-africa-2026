@@ -6,9 +6,11 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+	"uuid"
 	"workshop/cmd/themes/internal/antarctica"
 	"workshop/cmd/themes/internal/humpback"
 	"workshop/cmd/themes/internal/kenya"
+	"workshop/cmd/themes/internal/uganda"
 	"workshop/internal/domain/sighting"
 	"workshop/internal/domain/sighting/country"
 	"workshop/internal/domain/species"
@@ -27,6 +29,7 @@ var assets embed.FS
 // the starter serves it.
 type Lister interface {
 	List(ctx context.Context, filter sighting.ListFilter) ([]sighting.Sighting, error)
+	Find(ctx context.Context, id uuid.UUID) (sighting.Sighting, error)
 }
 
 // Handler serves the themed pages.
@@ -72,6 +75,13 @@ func (h *Handler) Routes(mux *http.ServeMux) {
 		sighting.ListFilter{Animals: []species.Animal{species.AnimalHumpbackWhale}},
 		func(s []sighting.Sighting, now time.Time) templ.Component {
 			return humpback.Page(humpback.NewProps(s, now))
+		},
+	))
+
+	mux.HandleFunc("GET /uganda", h.theme(
+		sighting.ListFilter{Country: country.Uganda},
+		func(s []sighting.Sighting, now time.Time) templ.Component {
+			return uganda.Page(uganda.NewProps(s, now))
 		},
 	))
 }

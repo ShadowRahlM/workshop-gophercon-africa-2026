@@ -1,0 +1,8 @@
+{
+	"name": "Uganda Wildlife Sightings",
+	"short_name": "Uganda Wildlife",
+	"icons": [{ "src": "/assets/images/logo.svg", "sizes": "any", "type": "image/svg+xml" }],
+	"theme_color": "#006B3F",
+	"background_color": "#0A1F0A",
+	"display": "standalone"
+}

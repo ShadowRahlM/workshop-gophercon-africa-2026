@@ -1,0 +1,230 @@
+package uganda
+
+import (
+	"workshop/cmd/themes/internal/layout"
+	"workshop/cmd/themes/internal/themeutil"
+	"workshop/internal/domain/sighting"
+)
+
+// Page renders the Uganda wildlife sightings page with a savanna-inspired
+// design and background music from the national anthem.
+templ Page(p Props) {
+	@layout.Base(layout.BaseProps{
+		Title:       "Uganda — Pearl of Africa Wildlife",
+		Description: "Wildlife sightings recorded across Uganda, the Pearl of Africa.",
+		Class:       "savanna",
+		Fonts:       "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&display=swap",
+		Stylesheet:  "/assets/css/uganda.css",
+		Skip:        layout.SkipLink{Target: "entries", Label: "Skip to sightings"},
+		Header:      nameplate(p),
+		Footer:      colophon(p),
+		Map:         &layout.MapProps{Points: p.Points},
+		Scripts:     audioScript(),
+	}) {
+		// Background audio — Uganda national anthem
+		<audio autoplay loop preload="auto" id="anthem">
+			<source src="/assets/audio/oh-uganda-the-pearl-of-africa.mp3" type="audio/mpeg"/>
+		</audio>
+		<button
+			class="audio-toggle"
+			id="audio-toggle"
+			aria-label="Toggle background music"
+			title="Toggle background music"
+		>
+			<span class="audio-toggle__icon">🎵</span>
+		</button>
+		@lede(p)
+		if len(p.Entries) == 0 {
+			<p class="empty">
+				Nothing has been recorded here yet. Run <code>workshop sightings ingest</code> to fetch some.
+			</p>
+		} else {
+			@inset(p)
+			<div class="entries" id="entries">
+				for _, e := range p.Entries {
+					@entry(e)
+				}
+			</div>
+		}
+	}
+}
+
+// nameplate is the masthead with the Uganda flag colors.
+templ nameplate(p Props) {
+	<header class="nameplate">
+		<div class="nameplate__bar"></div>
+		<div class="nameplate__row">
+			<p class="nameplate__tag">
+				<span>🇺🇬 Uganda</span>
+				<span aria-hidden="true">·</span>
+				<span>{ themeutil.Span(p.Summary) }</span>
+			</p>
+			<h1 class="nameplate__title">Pearl of Africa Wildlife</h1>
+			<nav class="nameplate__nav" aria-label="Themes">
+				for _, l := range layout.Nav {
+					<a href={ templ.URL(l.Path) } aria-current={ l.Current("/uganda") }>{ l.Title }</a>
+				}
+			</nav>
+		</div>
+		<div class="nameplate__bar"></div>
+	</header>
+}
+
+// lede opens the page with a headline and summary figures.
+templ lede(p Props) {
+	<section class="lede">
+		<div class="lede__body">
+			<h2 class="lede__head">Wildlife of<br/>the Pearl of Africa</h2>
+			<p class="lede__stand">{ standfirst(p.Summary) }</p>
+			if p.Summary.Sightings > 0 {
+				<p class="lede__intro">
+					{ count(p.Summary.Sightings) } records, gathered by { count(p.Summary.Recorders) } observers
+					between { p.Summary.Earliest.Format("January 2006") } and { p.Summary.Latest.Format("January 2006") },
+					describe { count(p.Summary.Species) } species across Uganda's parks, lakes and reserves.
+					Each is reproduced below as it was filed, with the photographs that came with it.
+				</p>
+			}
+		</div>
+		<aside class="margin" aria-label="Summary figures">
+			@figure("Records", count(p.Summary.Sightings))
+			@figure("Species", count(p.Summary.Species))
+			@figure("Photographs", count(p.Summary.Media))
+			@figure("Observers", count(p.Summary.Recorders))
+			if len(p.Species) > 0 {
+				<div class="margin__list">
+					<h3>Seen here</h3>
+					<ul>
+						for _, r := range p.Species {
+							<li><span>{ r.Name }</span><em>{ count(r.Count) }</em></li>
+						}
+					</ul>
+				</div>
+			}
+			if len(p.Regions) > 0 {
+				<div class="margin__list">
+					<h3>Across regions</h3>
+					<ul>
+						for _, r := range p.Regions {
+							<li><span>{ r.Name }</span><em>{ count(r.Count) }</em></li>
+						}
+					</ul>
+				</div>
+			}
+		</aside>
+	</section>
+}
+
+templ figure(label, value string) {
+	<div class="margin__figure">
+		<strong>{ value }</strong>
+		<span>{ label }</span>
+	</div>
+}
+
+// inset is the map between the lede and the entries.
+templ inset(p Props) {
+	<figure class="inset">
+		if len(p.Points) > 0 {
+			<div
+				class="inset__map"
+				data-sightings-map
+				data-points="map-points"
+				data-marker-fill="#c55a11"
+				data-marker-stroke="#fef3e2"
+				data-marker-radius="7"
+				data-max-zoom="7"
+				role="region"
+				aria-label="Map of Uganda wildlife sightings. Each record is written out in full below."
+				tabindex="0"
+			></div>
+		}
+		<figcaption>
+			Where the records were made. The full account of each one follows.
+		</figcaption>
+	</figure>
+}
+
+// entry writes a single sighting as an article card.
+templ entry(e Entry) {
+	<article class="entry" id={ themeutil.Anchor(e.Sighting) }>
+		<div class="entry__text">
+			<p class="entry__folio">{ folio(e.Number) }</p>
+			<h3 class="entry__title">{ themeutil.DisplayName(e.Sighting.Species) }</h3>
+			<p class="entry__latin">{ e.Sighting.Species.ScientificName }</p>
+			<p class="entry__byline">
+				<time datetime={ e.Sighting.HappenedAt.Format("2006-01-02") }>
+					{ e.Sighting.HappenedAt.Format("2 January 2006") }
+				</time>
+				<span aria-hidden="true">·</span>
+				<span>{ themeutil.Place(e.Sighting.Location) }</span>
+			</p>
+			if e.Sighting.Remarks != "" {
+				<p class="entry__remarks">{ e.Sighting.Remarks }</p>
+			}
+			<dl class="entry__meta">
+				<div>
+					<dt>Recorded by</dt>
+					<dd>{ themeutil.Recorder(e.Sighting) }</dd>
+				</div>
+				<div>
+					<dt>Position</dt>
+					<dd class="tnum">{ themeutil.Coordinates(e.Sighting.Location) }</dd>
+				</div>
+				if e.Sighting.IndividualCount != nil {
+					<div>
+						<dt>Counted</dt>
+						<dd>{ themeutil.Individuals(e.Sighting.IndividualCount) }</dd>
+					</div>
+				}
+				<div>
+					<dt>Basis</dt>
+					<dd>{ basis(e.Sighting) }</dd>
+				</div>
+			</dl>
+			if e.Sighting.ReferenceURL != "" {
+				<p class="entry__source">
+					<a href={ templ.URL(e.Sighting.ReferenceURL) } rel="noopener noreferrer" target="_blank">
+						Original record
+						<span class="visually-hidden">— { themeutil.DisplayName(e.Sighting.Species) }, { e.Sighting.HappenedAt.Format("2 January 2006") } (opens in a new tab)</span>
+					</a>
+				</p>
+			}
+		</div>
+		@plate(e.Sighting, e.Number == 1)
+	</article>
+}
+
+// plate is the photograph beside an entry.
+templ plate(s sighting.Sighting, first bool) {
+	<figure class="entry__plate">
+		if url := themeutil.Thumbnail(s); url != "" {
+			if first {
+				<img src={ url } alt={ themeutil.AltText(s) } decoding="async" fetchpriority="high"/>
+			} else {
+				<img src={ url } alt={ themeutil.AltText(s) } loading="lazy" decoding="async"/>
+			}
+			<figcaption>
+				{ themeutil.Credit(s) }
+			</figcaption>
+		} else {
+			<div class="entry__noplate">
+				<span>No photograph filed</span>
+			</div>
+		}
+	</figure>
+}
+
+templ colophon(p Props) {
+	<footer class="colophon">
+		<div class="nameplate__bar"></div>
+		<p>
+			Occurrence data from GBIF. Basemap &copy; OpenStreetMap contributors.
+			Photographs remain the property of their creators.
+		</p>
+		<p>Set { p.Now.Format("2 January 2006") }.</p>
+	</footer>
+}
+
+templ audioScript() {
+	<script src="/assets/js/audio-toggle.js" defer></script>
+}

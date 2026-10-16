@@ -30,6 +30,9 @@ type BaseProps struct {
 	// Map, when set, loads Leaflet and writes its markers out as JSON.
 	// How the map looks stays with the theme, on the map element.
 	Map *MapProps
+
+	// Scripts, when set, is rendered just before </body>.
+	Scripts templ.Component
 }
 
 // SkipLink points at an id, written without the leading #.

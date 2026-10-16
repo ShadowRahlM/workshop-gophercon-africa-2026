@@ -1,0 +1,25 @@
+package components
+
+import "workshop/internal/domain/sighting"
+
+templ Sparkline(byYear map[int]int, sum sighting.Summary) {
+	if sum.Sightings > 0 {
+		<svg class="sparkline" viewBox="0 0 100 24" preserveAspectRatio="none" role="img" aria-label={ sparkLabel(byYear, sum) }>
+			<polygon class="sparkline__fill" points={ sparkArea(byYear, sum) }></polygon>
+			<polyline class="sparkline__line" points={ sparkPoints(byYear, sum) } vector-effect="non-scaling-stroke"></polyline>
+		</svg>
+	}
+}
+
+templ Bars(rows []sighting.Tally) {
+	if len(rows) > 0 {
+		<ol class="bars">
+			for _, row := range rows {
+				<li class="bars__row" style={ bar(row.Count, rows[0].Count) }>
+					<span class="bars__name">{ row.Name }</span>
+					<span class="bars__count">{ row.Count }</span>
+				</li>
+			}
+		</ol>
+	}
+}

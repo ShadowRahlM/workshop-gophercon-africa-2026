@@ -8,37 +8,64 @@ import (
 
 	"workshop/internal/domain/sighting"
 	"workshop/internal/domain/species"
+	"workshop/internal/domain/weather"
 )
 
+func formatSightingURL(id string) string {
+	return "/sightings/" + id
+}
+
+func formatTemp(temp float64) string {
+	return fmt.Sprintf("%.0f°C", temp)
+}
+
 templ SightingCard(s sighting.Sighting) {
-	<article class="card">
+	<article class="card" id={ Anchor(s) }>
 		<!-- Header -->
 		<header class="card__header">
-			<h2>{ displayName(s.Species) }</h2>
+			<h2>
+				<a href={ formatSightingURL(s.ID.String()) }>{ displayName(s.Species) }</a>
+			</h2>
 			if s.Species.ScientificName != "" {
 				<p class="card__scientific">{ s.Species.ScientificName }</p>
 			}
 		</header>
 		<!-- Meta -->
 		<dl class="card__meta">
-			<dt>Seen</dt>
+			<dt><i class="ph ph-calendar"></i> Seen</dt>
 			<dd>{ s.HappenedAt.Format("2 January 2006") }</dd>
-			<dt>Where</dt>
+			<dt><i class="ph ph-map-pin"></i> Where</dt>
 			<dd>{ place(s.Location) }</dd>
 			if s.IndividualCount != nil {
-				<dt>Count</dt>
+				<dt><i class="ph ph-paw-print"></i> Count</dt>
 				<dd>{ individuals(*s.IndividualCount) }</dd>
 			}
 			if s.RecordedBy != "" {
-				<dt>Recorded by</dt>
+				<dt><i class="ph ph-user"></i> Recorded by</dt>
 				<dd>{ s.RecordedBy }</dd>
 			}
 		</dl>
+		<!-- Weather -->
+		if !s.Weather.ObservedAt.IsZero() {
+			<div class="card__weather">
+				@WeatherSummary(s.Weather)
+			</div>
+		}
 		<!-- Gallery -->
 		<div class="card__gallery">
 			@Gallery(s.Media)
 		</div>
 	</article>
+}
+
+templ WeatherSummary(w weather.Weather) {
+	<div class="weather-summary">
+		<i class="ph ph-thermometer"></i>
+		<span class="weather-summary__temp">{ formatTemp(w.Temperature.Actual) }</span>
+		if w.Condition.Description != "" {
+			<span class="weather-summary__condition">{ w.Condition.Description }</span>
+		}
+	</div>
 }
 
 // displayName prefers the name a reader would recognise, falling back

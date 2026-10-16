@@ -46,6 +46,9 @@ templ Base(props BaseProps) {
 				<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
 				<script src="/assets/js/sightings-map.js" defer></script>
 			}
+			if props.Scripts != nil {
+				@props.Scripts
+			}
 		</body>
 	</html>
 }

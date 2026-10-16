@@ -6,15 +6,55 @@ import (
 	"workshop/web/views/layout"
 )
 
-templ Home(sightings []sighting.Sighting) {
-	@layout.Base(layout.BaseProps{
-		Title: "Sightings",
+templ Home(sightings []sighting.Sighting, summary sighting.Summary) {
+	{{ byYear := sighting.CountByYear(sightings) }}
+		@layout.Base(layout.BaseProps{
+		Title: "Uganda Wildlife Sightings",
 	}) {
-		<h1>Sightings</h1>
+		if len(sightings) > 0 {
+			<section class="hero">
+				<h1 class="hero__title"><i class="ph ph-paw-print"></i> Uganda Wildlife Sightings</h1>
+				<p class="hero__subtitle">
+					Discovering { summary.Sightings } wildlife sightings across { summary.Countries } countries — from { summary.Earliest.Format("January 2006") } to { summary.Latest.Format("January 2006") }. Explore the Pearl of Africa's incredible biodiversity.
+				</p>
+				<div class="hero__stats">
+					<div class="hero__stat">
+						<span class="hero__stat-value">{ summary.Sightings }</span>
+						<span class="hero__stat-label">Sightings</span>
+					</div>
+					<div class="hero__stat">
+						<span class="hero__stat-value">{ summary.Species }</span>
+						<span class="hero__stat-label">Species</span>
+					</div>
+					<div class="hero__stat">
+						<span class="hero__stat-value">{ summary.Countries }</span>
+						<span class="hero__stat-label">Countries</span>
+					</div>
+					<div class="hero__stat">
+						<span class="hero__stat-value">{ summary.Media }</span>
+						<span class="hero__stat-label">Photos</span>
+					</div>
+				</div>
+			</section>
+
+			if byYear != nil && len(byYear) > 0 {
+				<section class="stats-section">
+					<h2><i class="ph ph-trend-up"></i> Sightings Over Time</h2>
+					@components.Sparkline(byYear, summary)
+				</section>
+			}
+
+			@components.Map(components.MapProps{
+				Points:  components.MapPoints(sightings),
+				Cluster: true,
+				Label:   "Where the sightings were",
+			})
+		}
+
 		if len(sightings) == 0 {
 			<p>No sightings have been ingested yet.</p>
 		} else {
-			<p>Total: { len(sightings) }</p>
+			<h2><i class="ph ph-paw-print"></i> Recent Sightings</h2>
 			<ul class="sightings">
 				for _, s := range sightings {
 					<li>

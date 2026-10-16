@@ -11,6 +11,7 @@ var Nav = []Link{
 	{Path: "/antarctica", Title: "Antarctica"},
 	{Path: "/kenya", Title: "Kenya"},
 	{Path: "/humpback", Title: "Humpback"},
+	{Path: "/uganda", Title: "Uganda"},
 }
 
 // Current returns the aria-current value for this link on the page at

@@ -81,6 +81,43 @@ func Thumbnail(s sighting.Sighting) string {
 	return ""
 }
 
+// Credit names whoever took the first photograph on a sighting, with
+// the licence GBIF gave it when there is one.
+func Credit(s sighting.Sighting) string {
+	for _, m := range s.Media {
+		if m.Type != "StillImage" || m.URL == "" {
+			continue
+		}
+		name := cmp.Or(m.Creator, m.RightsHolder, "Unattributed")
+		if m.License != "" {
+			return name + " · " + Licence(m.License)
+		}
+		return name
+	}
+	return ""
+}
+
+// Licence shortens the licence URLs GBIF returns to their name.
+func Licence(raw string) string {
+	switch {
+	case strings.Contains(raw, "by-nc-sa"):
+		return "CC BY-NC-SA"
+	case strings.Contains(raw, "by-nc-nd"):
+		return "CC BY-NC-ND"
+	case strings.Contains(raw, "by-nc"):
+		return "CC BY-NC"
+	case strings.Contains(raw, "by-sa"):
+		return "CC BY-SA"
+	case strings.Contains(raw, "by-nd"):
+		return "CC BY-ND"
+	case strings.Contains(raw, "publicdomain"), strings.Contains(raw, "zero"):
+		return "CC0"
+	case strings.Contains(raw, "creativecommons.org/licenses/by"):
+		return "CC BY"
+	}
+	return raw
+}
+
 // AltText describes a sighting's image for anyone who cannot see it.
 func AltText(s sighting.Sighting) string {
 	return fmt.Sprintf("%s photographed at %s on %s",

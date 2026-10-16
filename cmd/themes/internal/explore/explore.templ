@@ -1,0 +1,329 @@
+package explore
+
+import (
+	"workshop/cmd/themes/internal/layout"
+	"workshop/cmd/themes/internal/themeutil"
+
+	"github.com/a-h/templ"
+)
+
+// Record renders one sighting on its own page, with the weather it was
+// recorded in.
+templ Record(p RecordProps) {
+	@layout.Base(layout.BaseProps{
+		Title:       themeutil.DisplayName(p.Sighting.Species) + " — Uganda Wildlife",
+		Description: "A sighting of " + themeutil.DisplayName(p.Sighting.Species) + " recorded in " + themeutil.Locale(p.Sighting.Location) + ".",
+		Class:       "explore",
+		Fonts:       fonts,
+		Stylesheet:  "/assets/css/explore.css",
+		Skip:        layout.SkipLink{Target: "content", Label: "Skip to sighting"},
+		Header:      header("/atlas"),
+		Footer:      footer(),
+		Map:         p.Map,
+	}) {
+		<article class="record" id="content" aria-labelledby="record-head">
+			<p class="record__back"><a href="/atlas">← Back to the atlas</a></p>
+			<header class="record__head">
+				<p class="record__eyebrow">{ themeutil.Since(p.Sighting.HappenedAt, p.Now) }</p>
+				<h1 id="record-head">{ themeutil.DisplayName(p.Sighting.Species) }</h1>
+				<p class="record__latin">{ p.Sighting.Species.ScientificName }</p>
+				<p class="record__byline">
+					<time datetime={ p.Sighting.HappenedAt.Format("2006-01-02") }>{ p.Sighting.HappenedAt.Format("2 January 2006") }</time>
+					<span aria-hidden="true">·</span>
+					<span>{ themeutil.Place(p.Sighting.Location) }</span>
+				</p>
+			</header>
+			<div class="record__grid">
+				<section class="weather" aria-labelledby="weather-head">
+					<h2 id="weather-head">Weather at the sighting</h2>
+					<p class="weather__condition">{ condition(p.Sighting.Weather.Condition.Description) }</p>
+					<dl class="weather__stats">
+						@weatherStat("Temperature", celsius(p.Sighting.Weather.Temperature.Actual))
+						@weatherStat("Feels like", celsius(p.Sighting.Weather.Temperature.Apparent))
+						@weatherStat("Rain", millimetres(p.Sighting.Weather.Precipitation.Total))
+						@weatherStat("Wind", kmh(p.Sighting.Weather.Wind.Speed)+" from the "+compass(p.Sighting.Weather.Wind.Direction))
+						@weatherStat("Gusts", kmh(p.Sighting.Weather.Wind.Gusts))
+						@weatherStat("Humidity", percentage(p.Sighting.Weather.Humidity))
+						@weatherStat("Cloud cover", percentage(p.Sighting.Weather.CloudCover))
+					</dl>
+					<p class="weather__note">Observed at { when(p.Sighting.Weather.ObservedAt) }</p>
+				</section>
+				<section class="record__panel" aria-labelledby="record-facts">
+					<h2 id="record-facts">The record</h2>
+					<dl class="record__facts">
+						<div>
+							<dt>Recorded by</dt>
+							<dd>{ themeutil.Recorder(p.Sighting) }</dd>
+						</div>
+						<div>
+							<dt>Position</dt>
+							<dd class="tnum">{ themeutil.Coordinates(p.Sighting.Location) }</dd>
+						</div>
+						if p.Sighting.IndividualCount != nil {
+							<div>
+								<dt>Counted</dt>
+								<dd>{ themeutil.Individuals(p.Sighting.IndividualCount) }</dd>
+							</div>
+						}
+						<div>
+							<dt>Basis</dt>
+							<dd>{ basis(p.Sighting) }</dd>
+						</div>
+					</dl>
+					if p.Sighting.ReferenceURL != "" {
+						<p>
+							<a href={ templ.URL(p.Sighting.ReferenceURL) } rel="noopener noreferrer" target="_blank">Original record</a>
+						</p>
+					}
+				</section>
+			</div>
+			if p.Map != nil {
+				<figure class="record__map">
+					<div
+						class="record__canvas"
+						data-sightings-map
+						data-points="map-points"
+						data-max-zoom="8"
+						data-marker-fill="#c55a11"
+						data-marker-stroke="#fef3e2"
+						data-marker-radius="8"
+						role="region"
+						aria-label="Map of where this sighting was made"
+						tabindex="0"
+					></div>
+					<figcaption>Where this sighting was made.</figcaption>
+				</figure>
+			}
+			if p.Thumb != "" {
+				<figure class="record__photo">
+					<img src={ p.Thumb } alt={ themeutil.AltText(p.Sighting) } decoding="async"/>
+					<figcaption>{ themeutil.Credit(p.Sighting) }</figcaption>
+				</figure>
+			}
+			if p.Sighting.Remarks != "" {
+				<p class="record__remarks">{ p.Sighting.Remarks }</p>
+			}
+		</article>
+	}
+}
+
+// Statistics renders the headline figures and the charts built from them.
+templ Statistics(p StatisticsProps) {
+	@layout.Base(layout.BaseProps{
+		Title:       "Statistics — Uganda Wildlife",
+		Description: "Headline figures and charts for the wildlife sightings recorded in Uganda.",
+		Class:       "explore",
+		Fonts:       fonts,
+		Stylesheet:  "/assets/css/explore.css",
+		Skip:        layout.SkipLink{Target: "content", Label: "Skip to statistics"},
+		Header:      header("/statistics"),
+		Footer:      footer(),
+	}) {
+		<section class="stats" id="content" aria-labelledby="stats-head">
+			<header class="stats__head">
+				<h1 id="stats-head">Statistics</h1>
+				<p>{ themeutil.Span(p.Summary) } · { count(p.Summary.Sightings) } records</p>
+			</header>
+			<dl class="stats__figures">
+				@stat("Records", count(p.Summary.Sightings))
+				@stat("Species", count(p.Summary.Species))
+				@stat("Countries", count(p.Summary.Countries))
+				@stat("Observers", count(p.Summary.Recorders))
+				@stat("Individuals counted", count(p.Summary.Individuals))
+				@stat("Photographs", count(p.Summary.Media))
+			</dl>
+			@chart("species", "Most recorded species", p.Species)
+			@chart("countries", "Sightings by country", p.Countries)
+			@chart("years", "Sightings by year", p.Years)
+		</section>
+	}
+}
+
+// Gallery lays out the photographs filed against sightings.
+templ Gallery(p GalleryProps) {
+	@layout.Base(layout.BaseProps{
+		Title:       "Gallery — Uganda Wildlife",
+		Description: "Photographs of wildlife sightings recorded across Uganda.",
+		Class:       "explore",
+		Fonts:       fonts,
+		Stylesheet:  "/assets/css/explore.css",
+		Skip:        layout.SkipLink{Target: "content", Label: "Skip to photographs"},
+		Header:      header("/gallery"),
+		Footer:      footer(),
+	}) {
+		<section class="gallery" id="content" aria-labelledby="gallery-head">
+			<header class="gallery__head">
+				<h1 id="gallery-head">Photo gallery</h1>
+				<p>{ count(len(p.Photos)) } photographs from { count(p.Summary.Sightings) } sightings.</p>
+			</header>
+			if len(p.Photos) == 0 {
+				<p class="empty">No photographs have been filed yet.</p>
+			} else {
+				<ul class="gallery__grid">
+					for _, ph := range p.Photos {
+						<li class="gallery__item">
+							<figure>
+								<a href={ templ.URL(recordPath(ph.Sighting)) }>
+									<img src={ ph.URL } alt={ themeutil.AltText(ph.Sighting) } loading="lazy" decoding="async"/>
+								</a>
+								<figcaption>
+									<strong>{ themeutil.DisplayName(ph.Sighting.Species) }</strong>
+									<span>{ ph.Sighting.HappenedAt.Format("2 Jan 2006") } · { themeutil.Locale(ph.Sighting.Location) }</span>
+									<span class="gallery__credit">{ themeutil.Credit(ph.Sighting) }</span>
+								</figcaption>
+							</figure>
+						</li>
+					}
+				</ul>
+			}
+		</section>
+	}
+}
+
+// Atlas puts every sighting on one map, with the weather beside each.
+templ Atlas(p AtlasProps) {
+	@layout.Base(layout.BaseProps{
+		Title:       "Atlas — Uganda Wildlife",
+		Description: "Every wildlife sighting placed on a map of Uganda.",
+		Class:       "explore",
+		Fonts:       fonts,
+		Stylesheet:  "/assets/css/explore.css",
+		Skip:        layout.SkipLink{Target: "content", Label: "Skip to the map"},
+		Header:      header("/atlas"),
+		Footer:      footer(),
+		Map:         p.Map,
+	}) {
+		<section class="atlas" id="content" aria-labelledby="atlas-head">
+			<header class="atlas__head">
+				<h1 id="atlas-head">Sightings on the map</h1>
+				<p>{ count(len(p.Sightings)) } sightings, each with the weather it was recorded in.</p>
+			</header>
+			if p.Map != nil {
+				<div
+					class="atlas__map"
+					data-sightings-map
+					data-points="map-points"
+					data-marker-fill="#c55a11"
+					data-marker-stroke="#fef3e2"
+					data-marker-radius="7"
+					data-max-zoom="7"
+					role="region"
+					aria-label="Map of every sighting. The list below gives each one in full."
+					tabindex="0"
+				></div>
+			} else {
+				<p class="empty">No sighting has a position to plot yet.</p>
+			}
+			<ul class="atlas__list">
+				for _, s := range p.Sightings {
+					<li class="atlas__item" id={ themeutil.Anchor(s) }>
+						<a href={ templ.URL(recordPath(s)) }>{ themeutil.DisplayName(s.Species) }</a>
+						<span>{ s.HappenedAt.Format("2 Jan 2006") } · { themeutil.Locale(s.Location) }</span>
+						<span class="atlas__weather">{ condition(s.Weather.Condition.Description) }, { celsius(s.Weather.Temperature.Actual) }</span>
+					</li>
+				}
+			</ul>
+		</section>
+	}
+}
+
+// NotFound is the page shown for any address the site does not serve.
+templ NotFound() {
+	@layout.Base(layout.BaseProps{
+		Title:       "Page not found — Uganda Wildlife",
+		Description: "The page you asked for is not on the map.",
+		Class:       "explore",
+		Fonts:       fonts,
+		Stylesheet:  "/assets/css/explore.css",
+		Skip:        layout.SkipLink{Target: "content", Label: "Skip to message"},
+		Header:      header(""),
+		Footer:      footer(),
+	}) {
+		<section class="notfound" id="content" aria-labelledby="notfound-head">
+			<p class="notfound__code" aria-hidden="true">404</p>
+			<h1 id="notfound-head">This trail goes nowhere</h1>
+			<p>The page you asked for is not on the map. It may have moved, or the record may never have been filed.</p>
+			<p class="notfound__links">
+				<a href="/atlas">Open the atlas</a>
+				<a href="/statistics">See the statistics</a>
+				<a href="/gallery">Browse the gallery</a>
+			</p>
+		</section>
+	}
+}
+
+// header is the masthead shared by every explore page, with the 3D
+// backdrop behind it.
+templ header(current string) {
+	<header class="site-head">
+		@scene()
+		<div class="site-head__inner">
+			<p class="site-head__brand">Uganda Wildlife</p>
+			<nav class="site-head__nav" aria-label="Pages">
+				for _, l := range layout.Nav {
+					<a href={ templ.URL(l.Path) } aria-current={ l.Current(current) }>{ l.Title }</a>
+				}
+			</nav>
+		</div>
+	</header>
+}
+
+// scene is the decorative 3D backdrop. It is hidden from assistive
+// technology and falls back to a flat background when motion is reduced.
+templ scene() {
+	<div class="scene" aria-hidden="true">
+		<div class="scene__ring"></div>
+		<div class="scene__ring scene__ring--tilt"></div>
+		<div class="scene__cube">
+			<span class="scene__face scene__face--front"></span>
+			<span class="scene__face scene__face--back"></span>
+			<span class="scene__face scene__face--left"></span>
+			<span class="scene__face scene__face--right"></span>
+			<span class="scene__face scene__face--top"></span>
+			<span class="scene__face scene__face--bottom"></span>
+		</div>
+	</div>
+}
+
+templ footer() {
+	<footer class="site-foot">
+		<p>Occurrence data from GBIF. Weather from Open-Meteo. Basemap &copy; OpenStreetMap contributors.</p>
+	</footer>
+}
+
+templ weatherStat(label, value string) {
+	<div>
+		<dt>{ label }</dt>
+		<dd>{ value }</dd>
+	</div>
+}
+
+templ stat(label, value string) {
+	<div class="stat">
+		<dt>{ label }</dt>
+		<dd>{ value }</dd>
+	</div>
+}
+
+// chart draws a leaderboard as bars, with the numbers written out so
+// nothing depends on the bars alone.
+templ chart(id, title string, rows []Bar) {
+	<section class="chart" aria-labelledby={ "chart-" + id }>
+		<h2 id={ "chart-" + id }>{ title }</h2>
+		if len(rows) == 0 {
+			<p class="chart__empty">No records yet.</p>
+		} else {
+			<ol class="chart__rows">
+				for _, b := range rows {
+					<li class="chart__row">
+						<span class="chart__label">{ b.Label }</span>
+						<span class="chart__track" aria-hidden="true">
+							<span class="chart__fill" style={ barWidth(b.Percent) }></span>
+						</span>
+						<span class="chart__value">{ count(b.Count) }</span>
+					</li>
+				}
+			</ol>
+		}
+	</section>
+}

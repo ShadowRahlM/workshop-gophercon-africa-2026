@@ -7,9 +7,36 @@ import (
 
 templ Error(message string, code int) {
 	@layout.Base(layout.BaseProps{
-		Title: "Error " + strconv.Itoa(code),
+		Title: errorTitle(code),
 	}) {
-		<h1>{ strconv.Itoa(code) }</h1>
-		<p>{ message }</p>
+		<div class="error-page">
+			<i class="ph ph-warning error-page__icon"></i>
+			<h1>{ strconv.Itoa(code) }</h1>
+			<p>{ message }</p>
+			<p>{ errorDescription(code) }</p>
+			<a href="/"><i class="ph ph-house"></i> Back to home</a>
+		</div>
+	}
+}
+
+func errorTitle(code int) string {
+	switch code {
+	case 404:
+		return "Page Not Found"
+	case 500:
+		return "Server Error"
+	default:
+		return "Error " + strconv.Itoa(code)
+	}
+}
+
+func errorDescription(code int) string {
+	switch code {
+	case 404:
+		return "The page you are looking for does not exist or has been moved."
+	case 500:
+		return "Something went wrong on our end. Please try again later."
+	default:
+		return ""
 	}
 }

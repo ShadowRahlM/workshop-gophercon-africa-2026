@@ -1,5 +1,7 @@
 package layout
 
+import "workshop/web/views/components"
+
 type BaseProps struct {
 	Title string
 }
@@ -11,13 +13,60 @@ templ Base(props BaseProps) {
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
 			<title>{ props.Title }</title>
+			<link rel="icon" href="/assets/images/logo.svg" type="image/svg+xml"/>
+			<link rel="manifest" href="/assets/manifest.json"/>
+			<meta name="theme-color" content="#006B3F"/>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+			<script src="https://unpkg.com/@phosphor-icons/web"></script>
 			<link rel="stylesheet" href="/assets/css/app.css"/>
+			<link rel="stylesheet" href="/assets/css/charts.css"/>
+			<link rel="stylesheet" href="/assets/css/lightbox.css"/>
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+			<link rel="stylesheet" href="/assets/css/map.css"/>
+			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" integrity="sha384-pmjIAcz2bAn0xukfxADbZIb3t8oRT9Sv0rvO+BR5Csr6Dhqq+nZs59P0pPKQJkEV" crossorigin="anonymous"/>
+			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" integrity="sha384-wgw+aLYNQ7dlhK47ZPK7FRACiq7ROZwgFNg0m04avm4CaXS+Z9Y7nMu8yNjBKYC+" crossorigin="anonymous"/>
 		</head>
 		<body>
-			<main class="container">
-				{ children... }
-			</main>
+			<div class="container">
+				<header class="site-header">
+					<a class="site-header__logo" href="/">
+						<img src="/assets/images/logo.svg" alt="Uganda Wildlife Sightings, home" width="36" height="36"/>
+						<span>🇺🇬 Uganda Wildlife</span>
+					</a>
+					<nav class="nav">
+						<a href="/"><i class="ph ph-house"></i> Sightings</a>
+						<a href="/stats"><i class="ph ph-chart-bar"></i> Statistics</a>
+					</nav>
+				</header>
+				<main>
+					{ children... }
+				</main>
+			</div>
+			<!-- Background Audio Player -->
+			<div class="audio-player" id="audioPlayer">
+				<div class="audio-player__eq" id="eqBars">
+					<span></span>
+					<span></span>
+					<span></span>
+					<span></span>
+				</div>
+				<button class="audio-player__btn" id="playBtn" title="Play/Pause" aria-label="Play or pause music">
+					<i class="ph ph-play"></i>
+				</button>
+				<span class="audio-player__label">Oh Uganda</span>
+				<input class="audio-player__volume" id="volumeSlider" type="range" min="0" max="100" value="30" aria-label="Volume"/>
+				<audio id="bgAudio" loop preload="auto">
+					<source src="/assets/music/oh-uganda.mp3" type="audio/mpeg"/>
+				</audio>
+			</div>
+			@components.Lightbox()
 			<script src="/assets/js/app.js"></script>
+			<script src="/assets/js/lightbox.js" defer></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+			<script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" integrity="sha384-eXVCORTRlv4FUUgS/xmOyr66XBVraen8ATNLMESp92FKXLAMiKkerixTiBvXriZr" crossorigin="anonymous" defer></script>
+			<script src="/assets/js/map.js" defer></script>
 		</body>
 	</html>
 }

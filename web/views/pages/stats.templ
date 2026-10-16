@@ -1,0 +1,139 @@
+package pages
+
+import (
+	"fmt"
+	"workshop/internal/domain/sighting"
+	"workshop/web/views/layout"
+)
+
+type YearRow struct {
+	Year    int
+	Count   int
+	Percent int
+}
+
+func formatWidth(pct int) string {
+	return fmt.Sprintf("width: %d%%", pct)
+}
+
+templ Stats(summary sighting.Summary, topSpecies []sighting.Tally, topCountries []sighting.Tally, yearRows []YearRow) {
+	@layout.Base(layout.BaseProps{
+		Title: "Uganda Wildlife Statistics",
+	}) {
+		<h1><i class="ph ph-chart-bar"></i> Uganda Wildlife Statistics</h1>
+
+		<!-- Summary -->
+		<section class="stats-section">
+			<h2><i class="ph ph-squares-four"></i> Overview</h2>
+			<div class="stats-grid">
+				<div class="stat-card">
+					<i class="ph ph-binoculars stat-card__icon"></i>
+					<span class="stat-card__value">{ summary.Sightings }</span>
+					<span class="stat-card__label">Sightings</span>
+				</div>
+				<div class="stat-card">
+					<i class="ph ph-paw-print stat-card__icon"></i>
+					<span class="stat-card__value">{ summary.Species }</span>
+					<span class="stat-card__label">Species</span>
+				</div>
+				<div class="stat-card">
+					<i class="ph ph-globe stat-card__icon"></i>
+					<span class="stat-card__value">{ summary.Countries }</span>
+					<span class="stat-card__label">Countries</span>
+				</div>
+				<div class="stat-card">
+					<i class="ph ph-image stat-card__icon"></i>
+					<span class="stat-card__value">{ summary.Media }</span>
+					<span class="stat-card__label">Media Items</span>
+				</div>
+				<div class="stat-card">
+					<i class="ph ph-paw-print stat-card__icon"></i>
+					<span class="stat-card__value">{ summary.Individuals }</span>
+					<span class="stat-card__label">Individuals</span>
+				</div>
+				<div class="stat-card">
+					<i class="ph ph-users stat-card__icon"></i>
+					<span class="stat-card__value">{ summary.Recorders }</span>
+					<span class="stat-card__label">Recorders</span>
+				</div>
+			</div>
+			if !summary.Earliest.IsZero() {
+				<p class="stats-date-range">
+					<i class="ph ph-calendar"></i>
+					From { summary.Earliest.Format("2 January 2006") } to { summary.Latest.Format("2 January 2006") }
+				</p>
+			}
+		</section>
+
+		<!-- Top Species -->
+		if len(topSpecies) > 0 {
+			<section class="stats-section">
+				<h2><i class="ph ph-paw-print"></i> Top Species</h2>
+				<table class="stats-table">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Species</th>
+							<th>Count</th>
+						</tr>
+					</thead>
+					<tbody>
+						for i, t := range topSpecies {
+							<tr>
+								<td>{ i + 1 }</td>
+								<td>{ t.Name }</td>
+								<td>{ t.Count }</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</section>
+		}
+
+		<!-- Top Countries -->
+		if len(topCountries) > 0 {
+			<section class="stats-section">
+				<h2><i class="ph ph-globe"></i> Top Countries</h2>
+				<table class="stats-table">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Country</th>
+							<th>Count</th>
+						</tr>
+					</thead>
+					<tbody>
+						for i, t := range topCountries {
+							<tr>
+								<td>{ i + 1 }</td>
+								<td>{ t.Name }</td>
+								<td>{ t.Count }</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</section>
+		}
+
+		<!-- By Year -->
+		if len(yearRows) > 0 {
+			<section class="stats-section">
+				<h2><i class="ph ph-calendar"></i> Sightings by Year</h2>
+				<div class="year-chart">
+					for _, row := range yearRows {
+						<div class="year-chart__row">
+							<span class="year-chart__label">{ row.Year }</span>
+							<div class="year-chart__bar-container">
+								<div class="year-chart__bar" style={ formatWidth(row.Percent) }>
+									<span class="year-chart__count">{ row.Count }</span>
+								</div>
+							</div>
+						</div>
+					}
+				</div>
+			</section>
+		}
+
+		<a href="/" class="back-link"><i class="ph ph-arrow-left"></i> Back to sightings</a>
+	}
+}
